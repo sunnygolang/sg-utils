@@ -39,3 +39,12 @@ func (ed *EventDispatcher) Has(eventName string, handler EventHandlerInterface) 
 func (ed *EventDispatcher) Clear() {
 	ed.handlers = make(map[string][]EventHandlerInterface)
 }
+
+func (ed *EventDispatcher) Dispatch(event EventInterface) {
+	handlers, ok := ed.handlers[event.GetName()]
+	if ok {
+		for _, handler := range handlers {
+			handler.Handle(event)
+		}
+	}
+}
