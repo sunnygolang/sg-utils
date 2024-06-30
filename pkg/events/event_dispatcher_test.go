@@ -1,6 +1,8 @@
 package events
 
 import (
+	"fmt"
+	"sync"
 	"testing"
 	"time"
 
@@ -40,7 +42,10 @@ func (e *TestEvent) GetDateTime() time.Time {
 	return time.Now()
 }
 
-func (h *TestEventHandler) Handle(event EventInterface) {}
+func (h *TestEventHandler) Handle(event EventInterface, wg *sync.WaitGroup) {
+	defer wg.Done()
+	fmt.Printf("Handler %d: %s", h.ID, event.GetName())
+}
 
 func (suite *EventDispatcherTestSuite) SetupTest() {
 	suite.event = TestEvent{Name: "test", Payload: "test"}
@@ -114,8 +119,9 @@ type MockHandler struct {
 	mock.Mock
 }
 
-func (m *MockHandler) Handle(event EventInterface) {
+func (m *MockHandler) Handle(event EventInterface, wg *sync.WaitGroup) {
 	m.Called(event)
+	wg.Done()
 }
 
 func (suite *EventDispatcherTestSuite) TestEventDispatcher_Dispatch() {
