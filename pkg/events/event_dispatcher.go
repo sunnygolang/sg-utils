@@ -3,6 +3,7 @@ package events
 import "errors"
 
 var ErrHandlerAlreadyRegistered = errors.New("handler already registered")
+var ErrHandlerNotRegistered = errors.New("handler not registered")
 
 type EventDispatcher struct {
 	handlers map[string][]EventHandlerInterface
@@ -47,4 +48,17 @@ func (ed *EventDispatcher) Dispatch(event EventInterface) {
 			handler.Handle(event)
 		}
 	}
+}
+
+func (ed *EventDispatcher) Remove(eventName string, handler EventHandlerInterface) error {
+	_, ok := ed.handlers[eventName]
+	if ok {
+		for i, h := range ed.handlers[eventName] {
+			if h == handler {
+				ed.handlers[eventName] = append(ed.handlers[eventName][:i], ed.handlers[eventName][i+1:]...)
+				return nil
+			}
+		}
+	}
+	return ErrHandlerNotRegistered
 }
